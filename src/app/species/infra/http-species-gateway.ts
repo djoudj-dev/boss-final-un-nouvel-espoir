@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { Species } from '../domain/models/species';
 import { GetSpeciesGateway } from '../domain/gateways/get-species-gateway';
 import { SpeciesApi } from './species-api';
@@ -9,11 +9,12 @@ import { SpeciesApi } from './species-api';
 export class HttpSpeciesGateway implements GetSpeciesGateway {
   private readonly http = inject(HttpClient);
 
-  async getSpecies(url: string): Promise<Species> {
-    const api = await firstValueFrom(this.http.get<SpeciesApi>(url));
-    return {
-      name: api.name,
-      language: api.language,
-    };
+  getSpecies$(url: string): Observable<Species> {
+    return this.http.get<SpeciesApi>(url).pipe(
+      map((api) => ({
+        name: api.name,
+        language: api.language,
+      }))
+    );
   }
 }

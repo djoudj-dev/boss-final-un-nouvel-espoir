@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { Film } from '../domain/models/film';
 import { GetFilmGateway } from '../domain/gateways/get-film-gateway';
 import { FilmApi } from './film-api';
@@ -9,11 +9,12 @@ import { FilmApi } from './film-api';
 export class HttpFilmGateway implements GetFilmGateway {
   private readonly http = inject(HttpClient);
 
-  async getFilm(url: string): Promise<Film> {
-    const api = await firstValueFrom(this.http.get<FilmApi>(url));
-    return {
-      title: api.title,
-      releaseDate: api.release_date,
-    };
+  getFilm$(url: string): Observable<Film> {
+    return this.http.get<FilmApi>(url).pipe(
+      map((api) => ({
+        title: api.title,
+        releaseDate: api.release_date,
+      }))
+    );
   }
 }

@@ -1,6 +1,7 @@
-import { Component, input, inject, effect, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, input, inject, ChangeDetectionStrategy } from '@angular/core';
+import { toSignal, toObservable } from '@angular/core/rxjs-interop';
+import { switchMap, of, forkJoin, catchError } from 'rxjs';
 import { GET_VEHICLE_GATEWAY } from '../domain/gateways/get-vehicle-gateway';
-import { Vehicle } from '../domain/models/vehicle';
 
 @Component({
   selector: 'app-vehicles-list',
@@ -29,19 +30,20 @@ export class VehiclesListComponent {
   public readonly vehiclesUrls = input.required<string[]>();
 
   private readonly vehicleGateway = inject(GET_VEHICLE_GATEWAY);
-  protected readonly vehiclesList = signal<Vehicle[] | null>(null);
 
-  constructor() {
-    effect(() => {
-      const urls = this.vehiclesUrls();
-      if (!urls || urls.length === 0) {
-        this.vehiclesList.set(null);
-        return;
-      }
-
-      Promise.all(urls.map((url) => this.vehicleGateway.getVehicle(url)))
-        .then((vehicles) => this.vehiclesList.set(vehicles))
-        .catch(() => this.vehiclesList.set([]));
-    });
-  }
+  protected readonly vehiclesList = toSignal(
+    toObservable(this.vehiclesUrls).pipe(
+      switchMap((urls) => {
+        if (!urls || urls.length === 0) {
+          return of(null);
+        }
+        return forkJoin(
+          urls.map((url) => this.vehicleGateway.getVehicle$(url))
+        ).pipe(
+          catchError(() => of([]))
+        );
+      })
+    ),
+    { initialValue: null }
+  );
 }

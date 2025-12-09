@@ -1,6 +1,7 @@
-import { Component, input, inject, effect, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, input, inject, ChangeDetectionStrategy } from '@angular/core';
+import { toSignal, toObservable } from '@angular/core/rxjs-interop';
+import { switchMap, of, forkJoin, catchError } from 'rxjs';
 import { GET_FILM_GATEWAY } from '../domain/gateways/get-film-gateway.token';
-import { Film } from '../domain/models/film';
 
 @Component({
   selector: 'app-films-list',
@@ -30,19 +31,20 @@ export class FilmsListComponent {
   public readonly filmsUrls = input.required<string[]>();
 
   private readonly filmGateway = inject(GET_FILM_GATEWAY);
-  protected readonly filmsList = signal<Film[] | null>(null);
 
-  constructor() {
-    effect(() => {
-      const urls = this.filmsUrls();
-      if (!urls || urls.length === 0) {
-        this.filmsList.set(null);
-        return;
-      }
-
-      Promise.all(urls.map((url) => this.filmGateway.getFilm(url)))
-        .then((films) => this.filmsList.set(films))
-        .catch(() => this.filmsList.set([]));
-    });
-  }
+  protected readonly filmsList = toSignal(
+    toObservable(this.filmsUrls).pipe(
+      switchMap((urls) => {
+        if (!urls || urls.length === 0) {
+          return of(null);
+        }
+        return forkJoin(
+          urls.map((url) => this.filmGateway.getFilm$(url))
+        ).pipe(
+          catchError(() => of([]))
+        );
+      })
+    ),
+    { initialValue: null }
+  );
 }

@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { Homeworld } from '../domain/models/homeworld';
 import { GetHomeworldGateway } from '../domain/gateways/get-homeworld-gateway';
 import { HomeworldApi } from './homeworld-api';
@@ -9,11 +9,12 @@ import { HomeworldApi } from './homeworld-api';
 export class HttpHomeworldGateway implements GetHomeworldGateway {
   private readonly http = inject(HttpClient);
 
-  async getHomeworld(url: string): Promise<Homeworld> {
-    const api = await firstValueFrom(this.http.get<HomeworldApi>(url));
-    return {
-      name: api.name,
-      population: api.population,
-    };
+  getHomeworld$(url: string): Observable<Homeworld> {
+    return this.http.get<HomeworldApi>(url).pipe(
+      map((api) => ({
+        name: api.name,
+        population: api.population,
+      }))
+    );
   }
 }

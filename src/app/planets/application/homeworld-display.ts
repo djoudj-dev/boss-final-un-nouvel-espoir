@@ -1,6 +1,7 @@
-import { Component, input, inject, effect, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, input, inject, ChangeDetectionStrategy } from '@angular/core';
+import { toSignal, toObservable } from '@angular/core/rxjs-interop';
+import { switchMap, of, catchError } from 'rxjs';
 import { GET_HOMEWORLD_GATEWAY } from '../domain/gateways/get-homeworld-gateway';
-import { Homeworld } from '../domain/models/homeworld';
 
 @Component({
   selector: 'app-homeworld-display',
@@ -30,20 +31,18 @@ export class HomeworldDisplayComponent {
   public readonly homeworldUrl = input.required<string>();
 
   private readonly homeworldGateway = inject(GET_HOMEWORLD_GATEWAY);
-  protected readonly homeworld = signal<Homeworld | null>(null);
 
-  constructor() {
-    effect(() => {
-      const url = this.homeworldUrl();
-      if (!url) {
-        this.homeworld.set(null);
-        return;
-      }
-
-      this.homeworldGateway
-        .getHomeworld(url)
-        .then((homeworld) => this.homeworld.set(homeworld))
-        .catch(() => this.homeworld.set(null));
-    });
-  }
+  protected readonly homeworld = toSignal(
+    toObservable(this.homeworldUrl).pipe(
+      switchMap((url) => {
+        if (!url) {
+          return of(null);
+        }
+        return this.homeworldGateway.getHomeworld$(url).pipe(
+          catchError(() => of(null))
+        );
+      })
+    ),
+    { initialValue: null }
+  );
 }

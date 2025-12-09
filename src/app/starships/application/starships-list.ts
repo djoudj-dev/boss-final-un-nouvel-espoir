@@ -1,6 +1,7 @@
-import { Component, input, inject, effect, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, input, inject, ChangeDetectionStrategy } from '@angular/core';
+import { toSignal, toObservable } from '@angular/core/rxjs-interop';
+import { switchMap, of, forkJoin, catchError } from 'rxjs';
 import { GET_STARSHIP_GATEWAY } from '../domain/gateways/get-starship-gateway';
-import { Starship } from '../domain/models/starship';
 
 @Component({
   selector: 'app-starships-list',
@@ -29,19 +30,20 @@ export class StarshipsListComponent {
   public readonly starshipsUrls = input.required<string[]>();
 
   private readonly starshipGateway = inject(GET_STARSHIP_GATEWAY);
-  protected readonly starshipsList = signal<Starship[] | null>(null);
 
-  constructor() {
-    effect(() => {
-      const urls = this.starshipsUrls();
-      if (!urls || urls.length === 0) {
-        this.starshipsList.set(null);
-        return;
-      }
-
-      Promise.all(urls.map((url) => this.starshipGateway.getStarship(url)))
-        .then((starships) => this.starshipsList.set(starships))
-        .catch(() => this.starshipsList.set([]));
-    });
-  }
+  protected readonly starshipsList = toSignal(
+    toObservable(this.starshipsUrls).pipe(
+      switchMap((urls) => {
+        if (!urls || urls.length === 0) {
+          return of(null);
+        }
+        return forkJoin(
+          urls.map((url) => this.starshipGateway.getStarship$(url))
+        ).pipe(
+          catchError(() => of([]))
+        );
+      })
+    ),
+    { initialValue: null }
+  );
 }

@@ -1,6 +1,7 @@
-import { Component, input, inject, effect, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, input, inject, ChangeDetectionStrategy } from '@angular/core';
+import { toSignal, toObservable } from '@angular/core/rxjs-interop';
+import { switchMap, of, forkJoin, catchError } from 'rxjs';
 import { GET_SPECIES_GATEWAY } from '../domain/gateways/get-species-gateway';
-import { Species } from '../domain/models/species';
 
 @Component({
   selector: 'app-species-list',
@@ -28,19 +29,20 @@ export class SpeciesListComponent {
   public readonly speciesUrls = input.required<string[]>();
 
   private readonly speciesGateway = inject(GET_SPECIES_GATEWAY);
-  protected readonly speciesList = signal<Species[] | null>(null);
 
-  constructor() {
-    effect(() => {
-      const urls = this.speciesUrls();
-      if (!urls || urls.length === 0) {
-        this.speciesList.set(null);
-        return;
-      }
-
-      Promise.all(urls.map((url) => this.speciesGateway.getSpecies(url)))
-        .then((species) => this.speciesList.set(species))
-        .catch(() => this.speciesList.set([]));
-    });
-  }
+  protected readonly speciesList = toSignal(
+    toObservable(this.speciesUrls).pipe(
+      switchMap((urls) => {
+        if (!urls || urls.length === 0) {
+          return of(null);
+        }
+        return forkJoin(
+          urls.map((url) => this.speciesGateway.getSpecies$(url))
+        ).pipe(
+          catchError(() => of([]))
+        );
+      })
+    ),
+    { initialValue: null }
+  );
 }
