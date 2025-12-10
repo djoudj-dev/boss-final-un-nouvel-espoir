@@ -14,7 +14,7 @@ import { GET_SPECIES_GATEWAY } from '../domain/gateways/get-species-gateway';
         <span class="text-2xl">🧬</span> Espèce
       </h3>
       <div class="space-y-2">
-        @for (species of speciesList(); track $index) {
+        @for (species of speciesList(); track species.name) {
         <div class="p-3 rounded bg-secondary/20 border border-secondary">
           <div class="font-bold text-primary">{{ species.name }}</div>
           <div class="text-sm text-gray-400">Langue: {{ species.language }}</div>
@@ -37,7 +37,7 @@ export class SpeciesListComponent {
           return of(null);
         }
         return forkJoin(
-          urls.map((url) => this.speciesGateway.getSpecies$(url))
+          urls.map((url) => this.speciesGateway.getSpecies(url))
         ).pipe(
           catchError(() => of([]))
         );

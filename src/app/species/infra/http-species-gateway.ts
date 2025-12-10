@@ -9,7 +9,7 @@ import { SpeciesApi } from './species-api';
 export class HttpSpeciesGateway implements GetSpeciesGateway {
   private readonly http = inject(HttpClient);
 
-  getSpecies$(url: string): Observable<Species> {
+  getSpecies(url: string): Observable<Species> {
     return this.http.get<SpeciesApi>(url).pipe(
       map((api) => ({
         name: api.name,

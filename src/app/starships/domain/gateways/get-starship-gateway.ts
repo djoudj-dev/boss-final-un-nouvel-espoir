@@ -2,7 +2,7 @@ import { Observable } from 'rxjs';
 import { Starship } from '../models/starship';
 
 export interface GetStarshipGateway {
-  getStarship$(url: string): Observable<Starship>;
+  getStarship(url: string): Observable<Starship>;
 }
 
 export { GET_STARSHIP_GATEWAY } from './get-starship-gateway.token';

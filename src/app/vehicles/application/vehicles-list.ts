@@ -14,7 +14,7 @@ import { GET_VEHICLE_GATEWAY } from '../domain/gateways/get-vehicle-gateway';
         <span class="text-2xl">🚗</span> Véhicules
       </h3>
       <div class="flex flex-wrap gap-3">
-        @for (vehicle of vehiclesList(); track $index) {
+        @for (vehicle of vehiclesList(); track vehicle.name) {
         <div
           class="px-4 py-2 rounded-full bg-secondary/20 border border-secondary text-primary font-semibold hover:bg-secondary/30 transition-colors"
         >
@@ -38,7 +38,7 @@ export class VehiclesListComponent {
           return of(null);
         }
         return forkJoin(
-          urls.map((url) => this.vehicleGateway.getVehicle$(url))
+          urls.map((url) => this.vehicleGateway.getVehicle(url))
         ).pipe(
           catchError(() => of([]))
         );

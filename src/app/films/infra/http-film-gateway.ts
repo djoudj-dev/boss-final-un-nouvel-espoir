@@ -9,7 +9,7 @@ import { FilmApi } from './film-api';
 export class HttpFilmGateway implements GetFilmGateway {
   private readonly http = inject(HttpClient);
 
-  getFilm$(url: string): Observable<Film> {
+  getFilm(url: string): Observable<Film> {
     return this.http.get<FilmApi>(url).pipe(
       map((api) => ({
         title: api.title,

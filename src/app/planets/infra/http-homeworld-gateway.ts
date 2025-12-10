@@ -9,7 +9,7 @@ import { HomeworldApi } from './homeworld-api';
 export class HttpHomeworldGateway implements GetHomeworldGateway {
   private readonly http = inject(HttpClient);
 
-  getHomeworld$(url: string): Observable<Homeworld> {
+  getHomeworld(url: string): Observable<Homeworld> {
     return this.http.get<HomeworldApi>(url).pipe(
       map((api) => ({
         name: api.name,

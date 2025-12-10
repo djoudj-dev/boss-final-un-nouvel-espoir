@@ -14,7 +14,7 @@ import { GET_STARSHIP_GATEWAY } from '../domain/gateways/get-starship-gateway';
         <span class="text-2xl">🚀</span> Vaisseaux
       </h3>
       <div class="flex flex-wrap gap-3">
-        @for (starship of starshipsList(); track $index) {
+        @for (starship of starshipsList(); track starship.name) {
         <div
           class="px-4 py-2 rounded-full bg-secondary/20 border border-secondary text-primary font-semibold hover:bg-secondary/30 transition-colors"
         >
@@ -38,7 +38,7 @@ export class StarshipsListComponent {
           return of(null);
         }
         return forkJoin(
-          urls.map((url) => this.starshipGateway.getStarship$(url))
+          urls.map((url) => this.starshipGateway.getStarship(url))
         ).pipe(
           catchError(() => of([]))
         );

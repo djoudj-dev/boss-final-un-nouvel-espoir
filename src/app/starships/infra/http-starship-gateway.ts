@@ -9,7 +9,7 @@ import { StarshipApi } from './starship-api';
 export class HttpStarshipGateway implements GetStarshipGateway {
   private readonly http = inject(HttpClient);
 
-  getStarship$(url: string): Observable<Starship> {
+  getStarship(url: string): Observable<Starship> {
     return this.http.get<StarshipApi>(url).pipe(
       map((api) => ({
         name: api.name,

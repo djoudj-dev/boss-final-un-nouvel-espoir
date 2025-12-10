@@ -9,7 +9,7 @@ import { VehicleApi } from './vehicle-api';
 export class HttpVehicleGateway implements GetVehicleGateway {
   private readonly http = inject(HttpClient);
 
-  getVehicle$(url: string): Observable<Vehicle> {
+  getVehicle(url: string): Observable<Vehicle> {
     return this.http.get<VehicleApi>(url).pipe(
       map((api) => ({
         name: api.name,

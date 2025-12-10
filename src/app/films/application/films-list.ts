@@ -14,7 +14,7 @@ import { GET_FILM_GATEWAY } from '../domain/gateways/get-film-gateway.token';
         <span class="text-2xl">🎬</span> Films
       </h3>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-        @for (film of filmsList(); track $index) {
+        @for (film of filmsList(); track film.title) {
         <div
           class="p-4 rounded bg-secondary/10 border border-secondary/50 hover:bg-secondary/20 transition-colors"
         >
@@ -39,7 +39,7 @@ export class FilmsListComponent {
           return of(null);
         }
         return forkJoin(
-          urls.map((url) => this.filmGateway.getFilm$(url))
+          urls.map((url) => this.filmGateway.getFilm(url))
         ).pipe(
           catchError(() => of([]))
         );

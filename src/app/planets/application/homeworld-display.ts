@@ -38,7 +38,7 @@ export class HomeworldDisplayComponent {
         if (!url) {
           return of(null);
         }
-        return this.homeworldGateway.getHomeworld$(url).pipe(
+        return this.homeworldGateway.getHomeworld(url).pipe(
           catchError(() => of(null))
         );
       })
