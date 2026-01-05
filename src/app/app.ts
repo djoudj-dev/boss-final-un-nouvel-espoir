@@ -1,8 +1,8 @@
 import { Component, inject, signal } from '@angular/core';
-import { PeopleListComponent } from './peoples/application/people-list';
-import { PeopleDetailsComponent } from './peoples/application/people-details';
-import { GetPeopleUseCase } from './peoples/domain/use-cases/get-people';
-import { People } from './peoples/domain/models/people';
+import { PeopleListComponent } from './application/peoples/people-list';
+import { PeopleDetailsComponent } from './application/peoples/people-details';
+import { GetPeopleUseCase } from './domain/peoples/use-cases/get-people';
+import { People } from './domain/peoples/models/people';
 
 @Component({
   selector: 'app-root',
@@ -19,7 +19,7 @@ import { People } from './peoples/domain/models/people';
         @if (selectedPerson(); as person) {
         <app-people-details [person]="person" (back)="selectedPerson.set(null)" />
         } @else {
-        <app-people-list [people]="getPeopleUseCase.people()" (personSelected)="selectedPerson.set($event)" />
+        <app-people-list [people]="getPeopleUseCase.viewModel().people" (personSelected)="selectedPerson.set($event)" />
         }
       </main>
     </div>
